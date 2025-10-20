@@ -1,0 +1,44 @@
+name: Docs Deploy
+
+on:
+  push:
+    paths:
+      - 'docs/**'
+      - 'README.md'
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  build-and-deploy-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install deps
+        run: npm ci || true
+
+      - name: Build docs
+        run: |
+          if [ -d "./docs" ]; then
+            echo "Assuming docs are static files in ./docs"
+          else
+            echo "No docs/ folder found; copying README to public/docs/index.html"
+            mkdir -p public/docs
+            echo "<html><body><pre>$(sed 's/&/\&amp;/g' README.md | sed 's/</\&lt;/g' | sed 's/>/\&gt;/g')</pre></body></html>" > public/docs/index.html
+          fi
+
+      - name: Deploy docs to gh-pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public/docs
+          publish_branch: gh-pages

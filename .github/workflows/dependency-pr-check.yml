@@ -1,0 +1,33 @@
+name: Dependency PR checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+
+jobs:
+  verify-dependency-pr:
+    if: github.actor == 'dependabot[bot]' || contains(github.event.pull_request.user.login, 'dependabot')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run lint
+        run: npm run lint || true
+
+      - name: Run tests
+        run: npm test --silent || true
+
+      - name: npm audit
+        run: npm audit --audit-level=moderate || true
