@@ -37,3 +37,5 @@ http://www.gnu.org/licenses/gpl-3.0.html
 
 =\_=
 User Customize
+
+For checking if the Docs Deploy can run or not.
